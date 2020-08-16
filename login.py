@@ -63,17 +63,19 @@ class login():
         for _ in range(login.auto_captcha_times):
             try:
                 captcha = bilibili().cnn_captcha(tmp1)
+                login.auto_captcha_times -= 1
                 break
             except Exception:
                 Printer().printer("验证码识别服务器连接失败", "Error", "red")
                 login.auto_captcha_times -= 1
         else:
             try:
-                from PIL import Image
-                from io import BytesIO
-                img = Image.open(BytesIO(res.content))
-                img.show()
-                captcha = input('输入验证码\n').strip()
+                # from Pillow import Image
+                # from io import BytesIO
+                # img = Image.open(BytesIO(res.content))
+                # img.show()
+                print(res.content)
+                # captcha = input('输入验证码\n').strip()
             except ImportError:
                 Printer().printer("安装 Pillow 库后重启，以弹出验证码图片", "Error", "red")
                 exit()
@@ -98,6 +100,66 @@ class login():
         response = s.post(url, params=payload, headers=headers)
         return response
 
+    def login_with_captcha2(self, username, password,c):
+        headers = {
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36',
+            'cookie': "sid=hxt5szbb"
+        }
+        s = requests.session()
+        # url = "https://passport.bilibili.com/captcha"
+        # res = s.get(url, headers=headers)
+        # tmp1 = base64.b64encode(res.content)
+        # for _ in range(login.auto_captcha_times):
+        #     try:
+        #         captcha = bilibili().cnn_captcha(tmp1)
+        #         login.auto_captcha_times -= 1
+        #         break
+        #     except Exception:
+        #         Printer().printer("验证码识别服务器连接失败", "Error", "red")
+        #         login.auto_captcha_times -= 1
+        # else:
+        #     try:
+        #         # from Pillow import Image
+        #         # from io import BytesIO
+        #         # img = Image.open(BytesIO(res.content))
+        #         # img.show()
+        #         print(res.content)
+        #         # captcha = input('输入验证码\n').strip()
+        #     except ImportError:
+        #         Printer().printer("安装 Pillow 库后重启，以弹出验证码图片", "Error", "red")
+        #         exit()
+
+        params_dic = {
+            "actionKey": bilibili().dic_bilibili["actionKey"],
+            "appkey": bilibili().dic_bilibili["appkey"],
+            "build": bilibili().dic_bilibili["build"],
+            "captcha": c,
+            "device": bilibili().dic_bilibili["device"],
+            "mobi_app": bilibili().dic_bilibili["mobi_app"],
+            "password": password,
+            "platform": bilibili().dic_bilibili["platform"],
+            "username": username
+        }
+        temp_params = '&'.join([f'{key}={value}' for key, value in params_dic.items()])
+        sign = bilibili().calc_sign(temp_params)
+        payload = f'{temp_params}&sign={sign}'
+        headers = app_headers.copy()
+        headers['cookie'] = "sid=hxt5szbb"
+        url = "https://passport.bilibili.com/api/v3/oauth2/login"
+        response = s.post(url, params=payload, headers=headers)
+        return response
+
+    
+    def get_captcha(self):
+        headers = {
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36',
+            'cookie': "sid=hxt5szbb"
+        }
+        s = requests.session()
+        url = "https://passport.bilibili.com/captcha"
+        res = s.get(url, headers=headers)
+        return res.content
+
     # def access_token_2_cookies(self, access_token):
     #     params = f"access_key={access_token}&appkey={appkey}&gourl=https%3A%2F%2Faccount.bilibili.com%2Faccount%2Fhome"
     #     url = f"https://passport.bilibili.com/api/login/sso?{params}&sign={bilibili().calc_sign(params, app_secret)}"
@@ -114,9 +176,21 @@ class login():
         configloader.write2bilibililogin(dic_saved_session)
         return self.login()
 
-    def resetpw(self):
+    def loginupc(self,username,password,c):
+        bilibili().dic_bilibili['account']['username'] = str(username)
+        bilibili().dic_bilibili['account']['password'] = str(password)
+        bilibili().dic_bilibili['account']['captcha'] = str(c)
         dic_saved_session = {
             'username': str(username),
+            'password': str(password),
+            'captcha': str(c)
+        }
+        configloader.write2bilibililogin(dic_saved_session)
+        return self.login()
+
+    def resetpw(self):
+        dic_saved_session = {
+            'username': str(bilibili().dic_bilibili['account']['username']),
             'password': ""
         }
         configloader.write2bilibililogin(dic_saved_session)
@@ -125,6 +199,7 @@ class login():
     def login(self):
         username = str(bilibili().dic_bilibili['account']['username'])
         password = str(bilibili().dic_bilibili['account']['password'])
+        c = str(bilibili().dic_bilibili['account']['captcha'])
         if username != "":
             while True:
                 response = bilibili().request_getkey()
@@ -132,9 +207,11 @@ class login():
                 key = value['key']
                 Hash = str(value['hash'])
                 calcd_username, calcd_password = bilibili().calc_name_passw(key, Hash, username, password)
-                response = self.normal_login(calcd_username, calcd_password)
-                while response.json()['code'] == -105:
-                    response = self.login_with_captcha(calcd_username, calcd_password)
+                response = self.login_with_captcha2(calcd_username, calcd_password,c)
+                if response.json()['code'] == -105:
+                    # response = self.login_with_captcha(calcd_username, calcd_password)
+                    self.resetpw()
+                    return "验证码已失效，如果连续出现这种情况则有可能是API已失效"
                 if response.json()['code'] == -662:  # "can't decrypt rsa password~"
                     Printer().printer("打码时间太长key失效，重试", "Error", "red")
                     self.resetpw()

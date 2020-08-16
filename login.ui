@@ -7,19 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>220</width>
-    <height>170</height>
+    <height>270</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>220</width>
-    <height>170</height>
+    <height>270</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>220</width>
-    <height>170</height>
+    <height>270</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -84,13 +84,52 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>130</y>
+     <y>230</y>
      <width>200</width>
      <height>30</height>
     </rect>
    </property>
    <property name="text">
     <string>登录</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>130</y>
+     <width>200</width>
+     <height>50</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>验证码</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_c">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>190</y>
+     <width>160</width>
+     <height>30</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>190</y>
+     <width>40</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>刷新</string>
    </property>
   </widget>
  </widget>

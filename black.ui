@@ -26,16 +26,22 @@
    <string>房管封禁助手</string>
   </property>
   <widget class="QLineEdit" name="CookieInput">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
-     <x>89</x>
+     <x>210</x>
      <y>10</y>
-     <width>470</width>
+     <width>350</width>
      <height>30</height>
     </rect>
    </property>
   </widget>
   <widget class="QPushButton" name="SubmitCookieBtn">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>570</x>
@@ -173,9 +179,11 @@
    <property name="horizontalScrollMode">
     <enum>QAbstractItemView::ScrollPerPixel</enum>
    </property>
-   <attribute name="horizontalHeaderCascadingSectionResizes">
-    <bool>false</bool>
-   </attribute>
+   <column>
+    <property name="text">
+     <string>ID</string>
+    </property>
+   </column>
    <column>
     <property name="text">
      <string>用户名</string>
@@ -183,7 +191,7 @@
    </column>
    <column>
     <property name="text">
-     <string>用户ID</string>
+     <string>UID</string>
     </property>
    </column>
    <column>
@@ -194,6 +202,11 @@
    <column>
     <property name="text">
      <string>解封时间</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>操作员</string>
     </property>
    </column>
   </widget>
@@ -213,9 +226,9 @@
   <widget class="QLineEdit" name="RoomInput">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>60</x>
      <y>50</y>
-     <width>550</width>
+     <width>500</width>
      <height>30</height>
     </rect>
    </property>
@@ -236,14 +249,27 @@
   <widget class="QLabel" name="label_Login">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>450</y>
-     <width>180</width>
+     <x>90</x>
+     <y>10</y>
+     <width>120</width>
      <height>30</height>
     </rect>
    </property>
    <property name="text">
     <string>登录状态：未登录</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>50</y>
+     <width>50</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>房间号：</string>
    </property>
   </widget>
  </widget>

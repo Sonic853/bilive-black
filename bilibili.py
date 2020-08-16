@@ -102,6 +102,23 @@ class bilibili():
         else:
             return False
 
+    def replay_request2(self, response):
+        json_response = response.json(content_type=None)
+        if json_response['code'] == 1024:
+            Printer().printer(f'b站炸了,暂停所有请求5s后重试,请耐心等待', "Error", "red")
+            # await asyncio.sleep(5)
+            return True
+        elif json_response['code'] in [503, -509]:
+            Printer().printer(f'『{json_response["message"]}』5s后重试', "Error", "red")
+            # await asyncio.sleep(5)
+            return True
+        elif json_response['code'] == -403 and json_response.get("msg") == '访问被拒绝':
+            self.black_status = True
+            # asyncio.ensure_future(self.reset_black_status())
+            return False
+        else:
+            return False
+
     async def bili_section_request(self, method, url, replay=True, **kwargs):
         while True:
             try:
@@ -127,11 +144,43 @@ class bilibili():
                 await asyncio.sleep(1)
                 continue
 
+    def bili_section_request2(self, method, url, replay=True, **kwargs):
+        while True:
+            try:
+                response = self.bili_section.request(method, url, **kwargs)
+                if response.status in [403, 412]:
+                    if False:
+                        Printer().printer(f'<{response.status} {response.reason}>，60s后重试', "Error", "red")
+                        continue
+                    else:
+                        Printer().printer(f'<{response.status} {response.reason}>，放弃抽奖', "Error", "red")
+                        break
+                elif response.status == 404:
+                    # Printer().printer(f'<{response.status} {response.reason}>，接口疑似已失效，请联系开发者', "Error", "red")
+                    return False
+                tag = self.replay_request2(response)
+                if tag:
+                    return False
+                return response
+            except:
+                # print('当前网络不好，正在重试，请反馈开发者!!!!')
+                # print(sys.exc_info()[0], sys.exc_info()[1])
+                # await asyncio.sleep(1)
+                return False
+                # continue
+        return False
+
     async def bili_section_post(self, url, **kwargs):
         return await self.bili_section_request('POST', url, **kwargs)
 
     async def bili_section_get(self, url, **kwargs):
         return await self.bili_section_request('GET', url, **kwargs)
+
+    def bili_section_post2(self, url, **kwargs):
+        return self.bili_section_request2('POST', url, **kwargs)
+
+    def bili_section_get2(self, url, **kwargs):
+        return self.bili_section_request2('GET', url, **kwargs)
 
     # 1:900兑换
     async def request_doublegain_coin2silver(self):
@@ -510,6 +559,21 @@ class bilibili():
         pcheaders = self.dic_bilibili['pcheaders'].copy()
         pcheaders['Host'] = "api.vc.bilibili.com"
         response = await self.bili_section_get(url, headers=pcheaders)
+        return response
+
+    def post_data(self,url,gdata):
+        pcheaders = self.dic_bilibili['pcheaders'].copy()
+        # cookie = self.dic_bilibili['cookie']
+        # data = parse.urlencode(gdata)
+        pcheaders["content-type"] = "application/x-www-form-urlencoded"
+        response = requests.post(url, data=gdata, headers=pcheaders)
+        return response
+
+    def get_data(self,url):
+        pcheaders = self.dic_bilibili['pcheaders'].copy()
+        # print(pcheaders)
+        # cookie = self.dic_bilibili['cookie']
+        response = requests.get(url, headers=pcheaders)
         return response
 
     async def assign_group(self, i1, i2):
